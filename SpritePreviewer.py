@@ -13,7 +13,6 @@ def load_sprite(sprite_folder_name, number_of_frames):
     for frame in range(number_of_frames):
         folder_and_file_name = sprite_folder_name + "/sprite_" + str(frame).rjust(padding, '0') + ".png"
         frames.append(QPixmap(folder_and_file_name))
-
     return frames
 
 class SpritePreview(QMainWindow):
@@ -27,8 +26,8 @@ class SpritePreview(QMainWindow):
 
         # Add any other instance variables needed to track information as the program
         # runs here
-        self.value = 25
-        self.start_frames = 0
+        self.value = 8
+        self.current_frame_index = 0
         self.is_playing = False
 
         self.timer = QTimer()
@@ -36,7 +35,6 @@ class SpritePreview(QMainWindow):
 
         # Make the GUI in the setupUI method
         self.setupUI()
-
 
     def setupUI(self):
         # An application needs a central widget - often a QFrame
@@ -49,6 +47,7 @@ class SpritePreview(QMainWindow):
         # Sprite image display
         self.image_label = QLabel()
         self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.image_label.setPixmap(self.frames[0])
         self.image_label.setFixedSize(150, 150)
         layout1.addWidget(self.image_label)
 
@@ -61,16 +60,17 @@ class SpritePreview(QMainWindow):
         self.slider.setValue(self.value)
         self.slider.setTickPosition(QSlider.TickPosition.TicksBothSides)
         self.slider.setTickInterval(10)
+        self.slider.valueChanged.connect(self.update_fps_value)
 
         layout1.addWidget(self.slider)
 
         main_layout.addLayout(layout1)
 
         layout2 = QHBoxLayout()
-        self_fps_text = QLabel("Frames per second")
-        layout2.addWidget(self_fps_text)
+        self.fps_text = QLabel("Frames per second")
+        layout2.addWidget(self.fps_text)
 
-        self.fps_value= QLabel(str(self.value))
+        self.fps_value = QLabel(str(self.value))
         layout2.addWidget(self.fps_value)
         main_layout.addLayout(layout2)
 
@@ -91,23 +91,19 @@ class SpritePreview(QMainWindow):
         file_menu = menu.addMenu("File")
 
         pause_action = QAction("Pause", self)
-        pause_action.triggered.connect(self.toggle_animation)
+        pause_action.triggered.connect(self.pause_animation)
         file_menu.addAction(pause_action)
 
         exit_action = QAction("Exit", self)
         exit_action.triggered.connect(self.close)
         file_menu.addAction(exit_action)
 
-
-
-# You will need methods in the class to act as slots to connect to signals
-
+    # You will need methods in the class to act as slots to connect to signals
     def update_fps_value(self):
         self.value = self.slider.value()
         self.fps_value.setText(str(self.value))
         if self.is_playing:
             self.timer.start(int(1000 / self.value))
-
 
     def toggle_animation(self):
         if self.is_playing:
@@ -130,8 +126,8 @@ class SpritePreview(QMainWindow):
             self.stop()
 
     def update_frame(self):
-        self.start_frames = (self.start_frames + 1) % self.num_frames
-        self.image_label.setPixmap(self.frames[self.start_frames])
+        self.current_frame_index = (self.current_frame_index + 1) % self.num_frames
+        self.image_label.setPixmap(self.frames[self.current_frame_index])
 
 def main():
     app = QApplication([])
@@ -140,7 +136,6 @@ def main():
     # And show it
     window.show()
     app.exec()
-
 
 if __name__ == "__main__":
     main()
