@@ -70,8 +70,8 @@ class SpritePreview(QMainWindow):
         self_fps_text = QLabel("Frames per second")
         layout2.addWidget(self_fps_text)
 
-        self_fps_value= QLabel(str(self.value))
-        layout2.addWidget(self_fps_value)
+        self.fps_value= QLabel(str(self.value))
+        layout2.addWidget(self.fps_value)
         main_layout.addLayout(layout2)
 
         layout3 = QHBoxLayout()
@@ -105,6 +105,8 @@ class SpritePreview(QMainWindow):
     def update_fps_value(self):
         self.value = self.slider.value()
         self.fps_value.setText(str(self.value))
+        if self.is_playing:
+            self.timer.start(int(1000 / self.value))
 
 
     def toggle_animation(self):
@@ -122,6 +124,10 @@ class SpritePreview(QMainWindow):
         self.is_playing = False
         self.start_button.setText("Start")
         self.timer.stop()
+
+    def pause_animation(self):
+        if self.is_playing:
+            self.stop()
 
     def update_frame(self):
         self.start_frames = (self.start_frames + 1) % self.num_frames
